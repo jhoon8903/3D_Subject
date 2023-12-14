@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using  UnityEngine.InputSystem;
@@ -8,27 +5,22 @@ using  UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     #region Field
-
     [SerializeField] private LayerMask groundLayerMask;
     private float _moveSpeed = 5f;
     private float _jumpForce = 80f;
     private Vector2 _currentMoveInput;
-
     private Transform _cameraContainerTransform;
     private float _camMinXRotation = -85f;
     private float _camMaxXRotation = 85f;
     private float _camCurrentXRotation;
     private float _rotationSensitive = 0.2f;
     private Vector2 _mouseDelta;
-
     private bool _IsCanLook = true;
     private Rigidbody _rigidbody;
     private static PlayerController _instance;
-
     #endregion
 
     #region Property
-
     public float MoveSpeed
     {
         get => _moveSpeed;
@@ -82,7 +74,6 @@ public class PlayerController : MonoBehaviour
         get => _IsCanLook;
         set => _IsCanLook = value;
     }
-
     #endregion
 
     #region Singleton
@@ -91,26 +82,30 @@ public class PlayerController : MonoBehaviour
     {
         get
         {
-            if (_instance == null)
+            if (_instance != null) return _instance;
+            _instance = FindObjectOfType<PlayerController>();
+            if (_instance != null)
             {
-                _instance = FindObjectOfType<PlayerController>();
+                DontDestroyOnLoad(_instance.gameObject);
             }
-
+            else
+            {
+                Debug.LogError("PlayerController instance not found in the scene!");
+            }
             return _instance;
         }
     }
 
     private void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(this);
-        }
-        else if (_instance != this)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     #endregion
@@ -127,7 +122,6 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Update
-
     private void FixedUpdate()
     {
         Move();
@@ -182,30 +176,27 @@ public class PlayerController : MonoBehaviour
 
     public void OnMoveInput(InputAction.CallbackContext cbContext)
     {
-        if (cbContext.phase == InputActionPhase.Performed)
+        CurrentMoveInput = cbContext.phase switch
         {
-            CurrentMoveInput = cbContext.ReadValue<Vector2>();
-        }
-        else if (cbContext.phase == InputActionPhase.Canceled)
-        {
-            CurrentMoveInput = Vector2.zero;
-        }
+            InputActionPhase.Performed => cbContext.ReadValue<Vector2>(),
+            InputActionPhase.Canceled => Vector2.zero,
+            _ => CurrentMoveInput
+        };
     }
 
     public void OnJumpInput(InputAction.CallbackContext cbContext)
     {
-        if (cbContext.phase == InputActionPhase.Started)
-        {
-            if (IsGrounded()) _rigidbody.AddForce(Vector2.up * JumpForce, ForceMode.Impulse);
-        }
+        if (cbContext.phase != InputActionPhase.Started) return;
+        if (IsGrounded()) _rigidbody.AddForce(Vector2.up * JumpForce, ForceMode.Impulse);
     }
 
     private bool IsGrounded()
     {
-        var playerTransform = transform;
-        var forward = playerTransform.forward;
-        var right = playerTransform.right;
-        var groundPosition = playerTransform.position;
+        Transform playerTransform = transform;
+        Vector3 forward = playerTransform.forward;
+        Vector3 right = playerTransform.right;
+        Vector3 groundPosition = playerTransform.position;
+       
         Ray[] rays = 
         {
            new(groundPosition + forward * 0.2f + Vector3.up * 0.01f, Vector3.down),
@@ -219,16 +210,16 @@ public class PlayerController : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        var playerTransform = transform;
-        var forward = playerTransform.forward;
-        var right = playerTransform.right;
-        var groundPosition = playerTransform.position;
+        Transform playerTransform = transform;
+        Vector3 forward = playerTransform.forward;
+        Vector3 right = playerTransform.right;
+        Vector3 groundPosition = playerTransform.position;
+
         Gizmos.color = Color.red;
         Gizmos.DrawRay(groundPosition + forward * 0.2f, Vector3.down);
         Gizmos.DrawRay(groundPosition + -forward * 0.2f, Vector3.down);
         Gizmos.DrawRay(groundPosition + right * 0.2f, Vector3.down);
         Gizmos.DrawRay(groundPosition + -right * 0.2f, Vector3.down);
     }
-
     #endregion
 }
