@@ -14,6 +14,7 @@ namespace Scripts.UI.HUD
         private float _regenerate;
         private float _decayRate;
         private float _percentageValue;
+
         #endregion
     
         #region Properties
@@ -23,7 +24,7 @@ namespace Scripts.UI.HUD
         public float CurrentValue
         {
             get => _currentValue;
-            set  => _currentValue = value;
+            set => _currentValue = value;
         }
     
         public float MaxValue
@@ -65,5 +66,6 @@ namespace Scripts.UI.HUD
             DecayRate = decayRate;
         }
         #endregion
+
     }
 }

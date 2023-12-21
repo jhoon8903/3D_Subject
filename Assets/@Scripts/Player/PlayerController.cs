@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour
     public Transform CameraContainerTransform
     {
         get => _cameraContainerTransform;
-        set { _cameraContainerTransform = value; }
+        set => _cameraContainerTransform = value;
     }
 
     public Vector2 CurrentMoveInput

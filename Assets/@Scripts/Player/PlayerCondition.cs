@@ -17,8 +17,8 @@ public class PlayerCondition : MonoBehaviour, IDamage
     private Condition _saturation;
     private Condition _stamina;
     private float _noSaturationHealthDecay;
-    private UnityEvent _onAttackDamage; 
-
+    private UnityEvent _onAttackDamage;
+    public static event Action OnDamageable;
     #endregion
 
     #region Properties
@@ -59,7 +59,7 @@ public class PlayerCondition : MonoBehaviour, IDamage
     private void Start()
     {
         Health = gameObject.AddComponent<Condition>();
-        Health.Initialized(100,100,1,5);
+        Health.Initialized(100,100,1,5); 
         Stamina = gameObject.AddComponent<Condition>();
         Stamina.Initialized(100,100,5,0);
         Saturation = gameObject.AddComponent<Condition>();
@@ -118,6 +118,11 @@ public class PlayerCondition : MonoBehaviour, IDamage
     public void TakePhysicalDamage(int damageAmount)
     {
         Health.CurrentValue -= damageAmount;
-        OnAttackDamage?.Invoke();
+        OnDamage();
+    }
+
+    protected virtual void OnDamage()
+    {
+        OnDamageable?.Invoke();
     }
 }
